@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -65,7 +66,9 @@ import com.idega.util.messages.MessageResourceImportanceLevel;
 
 @Service
 @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-public class IWResourceBundle extends ResourceBundle implements MessageResource {
+public class IWResourceBundle extends ResourceBundle implements MessageResource, Serializable {
+
+	private static final long serialVersionUID = 1270028394223388594L;
 
 	public static final String RESOURCE_IDENTIFIER = "bundle_resource";
 	

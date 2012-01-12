@@ -1,5 +1,6 @@
 package com.idega.util;
 
+import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -26,8 +27,13 @@ import com.idega.presentation.IWContext;
  * @author idega 2002 - idega team
  * @version 1.1
  */
-public class IWTimestamp implements Comparable<IWTimestamp>, Cloneable {
+public class IWTimestamp implements Comparable<IWTimestamp>, Cloneable, Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6152459981067600867L;
+
 	/**
 	 * This field sets if the toString and toSQLString methods should cut off their milliseconds part in the returned String.
 	 * This is default true but is set to false for certain databases such as Informix.
