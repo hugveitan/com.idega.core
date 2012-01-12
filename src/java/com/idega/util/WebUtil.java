@@ -113,7 +113,7 @@ public class WebUtil extends DefaultSpringBean {
     public boolean logOut() {
     	IWContext iwc = CoreUtil.getIWContext();
     	if (iwc == null) {
-    		getLogger().warning("IWContext is not available!");
+    		getLogger().warning(IWContext.class.getName() + " is not available!");
     		return false;
     	}
     	if (!iwc.isLoggedOn()) {
@@ -131,5 +131,26 @@ public class WebUtil extends DefaultSpringBean {
     		return false;
     	
     	return loginBusiness.logOutUser(iwc);
+    }
+    
+    private Boolean latestNavigationUsed = Boolean.TRUE;
+    
+    public Boolean isLatestNavigationUsed() {
+    	latestNavigationUsed = getApplication().getSettings().getBoolean("html5_navigation", Boolean.FALSE);
+    	return latestNavigationUsed;
+    }
+    
+    public Boolean isLoggedIn() {
+    	IWContext iwc = CoreUtil.getIWContext();
+    	if (iwc == null)
+    		return Boolean.FALSE;
+    	
+    	try {
+    		return iwc.isLoggedOn();
+    	} catch (Exception e) {
+    		getLogger().log(Level.WARNING, "Error while checking if user is logged in", e);
+    	}
+    	
+    	return Boolean.FALSE;
     }
 }

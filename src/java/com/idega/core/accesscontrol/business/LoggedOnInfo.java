@@ -17,11 +17,11 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import com.idega.core.accesscontrol.data.LoginRecord;
-import com.idega.core.accesscontrol.data.LoginTable;
+import com.idega.core.accesscontrol.data.bean.LoginRecord;
+import com.idega.core.accesscontrol.data.bean.UserLogin;
 import com.idega.core.accesscontrol.jaas.IWCredential;
 import com.idega.core.accesscontrol.jaas.PersonalIdCredential;
-import com.idega.user.data.User;
+import com.idega.user.data.bean.User;
 import com.idega.util.IWTimestamp;
 
 /**
@@ -31,32 +31,31 @@ import com.idega.util.IWTimestamp;
  * This class implements HttpSessionBindingListener so that the login
  * information is cleaned up when the users session times out.
  * </p>
- * 
+ *
  * Last modified: $Date: 2007/01/22 08:16:38 $ by $Author: tryggvil $
- * 
+ *
  * @author <a href="mailto:gummi@idega.is">Gudmundur Agust Saemundsson</a>, <a
  *         href="mailto:tryggvi@idega.is">Tryggvi Larusson</a>
  * @version $Revision: 1.21 $
  */
-public class LoggedOnInfo implements HttpSessionBindingListener {
+public class LoggedOnInfo implements HttpSessionBindingListener  {
 
-	private static final String TICKET_CREDENTIAL = "ticket";
+  private static final String TICKET_CREDENTIAL = "ticket";
 
-	private User _user = null;
-	private IWTimestamp _timeOfLogon = null;
-	private LoginTable _loginTable;
-	private String _login = null;
-	private LoginRecord _loginRecord;
-	private String _encryptionType = null;
-	private String _loginType = null;
-	private Set<String> _userRoles = null;
-	private Map<Object, Object> _loggedOnInfoAttribute = new HashMap<Object, Object>();
-	private Map<String, IWCredential> credentials = new HashMap<String, IWCredential>();
+  private User _user = null;
+  private IWTimestamp _timeOfLogon = null;
+  private UserLogin _userLogin;
+  private String _login = null;
+  private LoginRecord _loginRecord;
+  private String _encryptionType = null;
+  private String _loginType = null;
+  private Set<String> _userRoles = null;
+  private Map<Object, Object> _loggedOnInfoAttribute = new HashMap<Object, Object>();
+  private Map<String, IWCredential> credentials = new HashMap<String, IWCredential>();
 
-	public LoggedOnInfo() {
-	}
+  	public LoggedOnInfo() {}
 
-	public void setUser(User user) {
+  	public void setUser(User user) {
 		this._user = user;
 		if (user != null) {
 			initializePersonalIdCredential(user);
@@ -67,7 +66,7 @@ public class LoggedOnInfo implements HttpSessionBindingListener {
 	 * <p>
 	 * Initializes the PersonalIdCredential object set in the Credentials map
 	 * </p>
-	 * 
+	 *
 	 * @param user
 	 */
 	private void initializePersonalIdCredential(User user) {
@@ -128,18 +127,17 @@ public class LoggedOnInfo implements HttpSessionBindingListener {
 		return this.getUser().equals(obj.getUser());
 	}
 
+	@Override
 	public void valueBound(HttpSessionBindingEvent event) {
 	}
 
+	@Override
 	public void valueUnbound(HttpSessionBindingEvent event) {
-		String name = this._user == null ? "Unknown" : this._user.getName();
+		String name = this._user == null ? "Unknown" : this._user.getDisplayName();
 		HttpSession session = event.getSession();
-		LoginBusinessBean loginBean = LoginBusinessBean
-				.getLoginBusinessBean(session);
+		LoginBusinessBean loginBean = LoginBusinessBean.getLoginBusinessBean(session);
 		boolean success = loginBean.logOutUserOnSessionTimeout(session, this);
-		System.out
-				.println("LoggedOnInfo: Session has expired logging off user: "
-						+ name + ". Success = " + success);
+		System.out.println("LoggedOnInfo: Session has expired logging off user: " + name + ". Success = " + success);
 	}
 
 	public String getLoginType() {
@@ -150,12 +148,18 @@ public class LoggedOnInfo implements HttpSessionBindingListener {
 		this._loginType = loginType;
 	}
 
-	public LoginTable getLoginTable() {
-		return this._loginTable;
+	/**
+	 * @return
+	 */
+	public UserLogin getUserLogin() {
+		return this._userLogin;
 	}
 
-	public void setLoginTable(LoginTable login) {
-		this._loginTable = login;
+	/**
+	 * @param id
+	 */
+	public void setUserLogin(UserLogin login) {
+		this._userLogin = login;
 	}
 
 	public Set<String> getUserRoles() {
@@ -187,7 +191,7 @@ public class LoggedOnInfo implements HttpSessionBindingListener {
 	 * Gets a Ticket that is used with Single-Sign-On solutions, and if that is
 	 * in use. If no single sign-on is set up this method returns null.
 	 * </p>
-	 * 
+	 *
 	 * @return
 	 */
 	public String getTicket() {

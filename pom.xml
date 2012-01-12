@@ -3,12 +3,12 @@
   <parent>
   	<groupId>com.idega.block.platform</groupId>
   	<artifactId>com.idega.block.platform</artifactId>
-  	<version>4.1.3-SNAPSHOT</version>
+  	<version>5.0.0-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
   <groupId>com.idega.block.platform</groupId>
   <artifactId>com.idega.core</artifactId>
-  <version>4.1.3-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
   <name>idegaWeb Core</name>
   
   <scm>
@@ -92,9 +92,11 @@
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-    </dependency>
+		<groupId>javax.mail</groupId>
+	    <artifactId>mail</artifactId>
+	    <version>${javax.mail-version}</version>
+        <type>jar</type>
+	</dependency>
     <dependency>
       <groupId>javax.activation</groupId>
       <artifactId>activation</artifactId>
@@ -135,9 +137,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.poi</groupId>
-      <artifactId>poi</artifactId>
-    </dependency>
+		<groupId>org.apache.poi</groupId>
+		<artifactId>poi</artifactId>
+		<version>${org.apache.poi-poi-version}</version>
+		<type>jar</type>
+	</dependency>
     <dependency>
       <groupId>jug</groupId>
       <artifactId>jug</artifactId>
@@ -150,7 +154,7 @@
       <version>${commons-fileupload-commons-fileupload-version}</version>
       <type>jar</type>
     </dependency>
-    <!-- This Commons-Collections Dependecy is requred by ehcache, and is also used in org.apache.myfaces and org.apache.slide -->
+    <!-- This Commons-Collections Dependency is required by ehcache, and is also used in org.apache.myfaces -->
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>

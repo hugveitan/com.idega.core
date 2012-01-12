@@ -470,7 +470,60 @@ version="1.2">
 	      <property-class>boolean</property-class>
 	    </property>
 	</component>
-	
+
+	<component>
+		<component-type>IWDatePicker</component-type>
+		<component-class>com.idega.presentation.ui.IWDatePicker</component-class>
+		<property>
+			<display-name>Parameter name</display-name>
+			<property-name>inputName</property-name>
+			<property-class>java.lang.String</property-class>
+		</property>
+		<property>
+			<display-name>Date</display-name>
+			<property-name>initialDate</property-name>
+			<property-class>java.util.Date</property-class>
+		</property>
+		<property>
+			<display-name>Date to</display-name>
+			<property-name>initialDateTo</property-name>
+			<property-class>java.util.Date</property-class>
+		</property>
+		<property>
+			<display-name>Date range separator</display-name>
+			<property-name>dateRangeSeparator</property-name>
+			<property-class>java.lang.String</property-class>
+		</property>
+		<property>
+			<display-name>Show date range</display-name>
+			<property-name>dateRange</property-name>
+			<property-class>boolean</property-class>
+		</property>
+		<property>
+			<display-name>Show calendar image</display-name>
+			<property-name>showCalendarImage</property-name>
+			<property-class>boolean</property-class>
+		</property>
+		<property>
+			<display-name>Show year change</display-name>
+			<property-name>showYearChange</property-name>
+			<property-class>boolean</property-class>
+		</property>
+		<property>
+			<display-name>Show month change</display-name>
+			<property-name>showMonthChange</property-name>
+			<property-class>boolean</property-class>
+		</property>
+		<property>
+			<display-name>Keep status on action</display-name>
+			<property-name>keepStatus</property-name>
+			<property-class>boolean</property-class>
+		</property>
+	</component>	
+	<component>
+		<component-type>UserImage</component-type>
+		<component-class>com.idega.idegaweb.widget.user.UserImage</component-class>
+	</component>
 	<component>
 	    <component-type>SelectionDoubleBox</component-type>
 	    <component-class>com.idega.presentation.ui.SelectionDoubleBox</component-class>
@@ -510,7 +563,6 @@ version="1.2">
 	      <property-class>java.util.List</property-class>
 	    </property>
 	</component>
-	
 	<converter>
 		<converter-id>iw.CreditCard</converter-id>
 		<converter-class>com.idega.util.converter.CreditCardConverter</converter-class>
@@ -547,4 +599,8 @@ version="1.2">
 		<managed-bean-scope>application</managed-bean-scope>
 	</managed-bean>
 
+	<converter>
+		<converter-for-class>java.util.Date</converter-for-class>
+		<converter-class>javax.faces.convert.DateTimeConverter</converter-class>
+	</converter>
 </faces-config>

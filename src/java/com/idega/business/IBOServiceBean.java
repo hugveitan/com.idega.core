@@ -13,9 +13,12 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBHome;
 import javax.ejb.EJBObject;
+import javax.ejb.FinderException;
 import javax.ejb.Handle;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.idega.core.accesscontrol.business.AccessController;
 import com.idega.core.accesscontrol.business.LoginSession;
@@ -26,7 +29,9 @@ import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWUserContext;
 import com.idega.presentation.IWContext;
-import com.idega.user.data.User;
+import com.idega.repository.RepositoryService;
+import com.idega.user.data.UserHome;
+import com.idega.user.data.bean.User;
 import com.idega.util.CoreConstants;
 import com.idega.util.expression.ELUtil;
 import com.idega.util.logging.LoggingHelper;
@@ -41,10 +46,13 @@ import com.idega.util.logging.LoggingHelper;
 public class IBOServiceBean implements IBOService, SessionBean {
 
 	private static final long serialVersionUID = 2234823785602301801L;
-	
+
+	@Autowired
+	private RepositoryService repositoryService;
+
   private SessionContext ejbSessionContext;
   private IWApplicationContext iwac;
-  private List<ActionListener> actionListeners = new ArrayList<ActionListener>();
+  private final List<ActionListener> actionListeners = new ArrayList<ActionListener>();
 
   public IBOServiceBean() {
   }
@@ -56,35 +64,39 @@ public class IBOServiceBean implements IBOService, SessionBean {
   }
   public void ejbPostCreate(){
   }
-  
-  public void initializeBean() {
+
+  @Override
+public void initializeBean() {
   }
-  
+
   public void ejbHomeIboCreate() throws CreateException{
   		ejbCreate();
-  }  
-  
-  public void ejbCreateIBO() throws CreateException{
-  	
   }
-  
 
-  public void ejbPostCreateIBO(){	
+  public void ejbCreateIBO() throws CreateException{
+
+  }
+
+
+  public void ejbPostCreateIBO(){
   }
 
 
   public IBOService ejbHomeCreateIBO() throws CreateException{
   	throw new UnsupportedOperationException("Not implemented");
   }
-  public String getServiceDescription() {
+  @Override
+public String getServiceDescription() {
     /**@todo: Implement this com.idega.business.IBOService method*/
     throw new java.lang.UnsupportedOperationException("Method getServiceDescription() not yet implemented.");
   }
-  public String getLocalizedServiceDescription(Locale locale) {
+  @Override
+public String getLocalizedServiceDescription(Locale locale) {
     /**@todo: Implement this com.idega.business.IBOService method*/
     throw new java.lang.UnsupportedOperationException("Method getLocalizedServiceDescription() not yet implemented.");
   }
-  public EJBHome getEJBHome() throws java.rmi.RemoteException {
+  @Override
+public EJBHome getEJBHome() throws java.rmi.RemoteException {
     return this.getSessionContext().getEJBHome();
   }
 
@@ -92,26 +104,34 @@ public class IBOServiceBean implements IBOService, SessionBean {
     return this.getSessionContext().getEJBObject();
   }
 
-  public Handle getHandle() throws java.rmi.RemoteException {
+  @Override
+public Handle getHandle() throws java.rmi.RemoteException {
     throw new java.lang.UnsupportedOperationException("Method getHandle() not yet implemented.");
   }
-  public Object getPrimaryKey() throws EJBException {
+  @Override
+public Object getPrimaryKey() throws EJBException {
     throw new EJBException("Method getPrimaryKey() not available for a session bean");
   }
-  public boolean isIdentical(EJBObject parm1) throws java.rmi.RemoteException {
+  @Override
+public boolean isIdentical(EJBObject parm1) throws java.rmi.RemoteException {
     return this.getEJBObject().equals(parm1);
   }
-  public void remove() throws java.rmi.RemoteException, javax.ejb.RemoveException {
+  @Override
+public void remove() throws java.rmi.RemoteException, javax.ejb.RemoveException {
     this.ejbRemove();
   }
-  public void ejbActivate() throws javax.ejb.EJBException, java.rmi.RemoteException {
+  @Override
+public void ejbActivate() throws javax.ejb.EJBException, java.rmi.RemoteException {
   }
-  public void ejbPassivate() throws javax.ejb.EJBException, java.rmi.RemoteException {
+  @Override
+public void ejbPassivate() throws javax.ejb.EJBException, java.rmi.RemoteException {
   }
-  public void ejbRemove() throws javax.ejb.EJBException, java.rmi.RemoteException {
+  @Override
+public void ejbRemove() throws javax.ejb.EJBException, java.rmi.RemoteException {
     this.ejbSessionContext=null;
   }
-  public void setSessionContext(SessionContext parm1) throws javax.ejb.EJBException, java.rmi.RemoteException {
+  @Override
+public void setSessionContext(SessionContext parm1) throws javax.ejb.EJBException, java.rmi.RemoteException {
     this.ejbSessionContext=parm1;
   }
   protected SessionContext getSessionContext() {
@@ -128,13 +148,14 @@ public class IBOServiceBean implements IBOService, SessionBean {
   	}
   }
 
-  public IWApplicationContext getIWApplicationContext(){
+  @Override
+public IWApplicationContext getIWApplicationContext(){
 	if(this.iwac==null){
 		return IWMainApplication.getDefaultIWApplicationContext();
 	}
     return this.iwac;
   }
-  
+
   /**
    * Gets the current IWMainApplication
    * @return
@@ -159,8 +180,8 @@ public class IBOServiceBean implements IBOService, SessionBean {
   protected String getBundleIdentifier(){
   	return CoreConstants.CORE_IW_BUNDLE_IDENTIFIER;
   }
-  
-  
+
+
   /**
    * Get an instance of the service bean specified by serviceClass
    */
@@ -183,14 +204,14 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
     protected IDOHome getIDOHome(Class<?> beanClass)throws RemoteException{
     	return IDOLookup.getHome(beanClass);
   }
-  
+
   	protected AccessController getAccessController() {
 		return this.getIWApplicationContext().getIWMainApplication().getAccessController();
 	}
 
-  	
+
   	//STANDARD LOGGING METHODS:
-  	
+
 	/**
 	 * Logs out to the default log level (which is by default INFO)
 	 * @param msg The message to log out
@@ -206,7 +227,7 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 	protected void log(Exception e) {
 		LoggingHelper.logException(e,this,getLogger(),getErrorLogLevel());
 	}
-	
+
 	/**
 	 * Logs out to the specified log level to the default Logger
 	 * @param level The log level
@@ -216,11 +237,11 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 		//System.out.println(msg);
 		getLogger().log(level,msg);
 	}
-	
+
 	protected void log(Level level, String msg, Throwable exception) {
 		getLogger().log(level, msg, exception);
 	}
-	
+
 	/**
 	 * Logs out to the error log level (which is by default WARNING) to the default Logger
 	 * @param msg The message to log out
@@ -238,7 +259,7 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 		//System.err.println(msg);
 		getLogger().log(getDebugLogLevel(),msg);
 	}
-	
+
 	/**
 	 * Logs out to the SEVERE log level to the default Logger
 	 * @param msg The message to log out
@@ -246,18 +267,17 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 	protected void logSevere(String msg) {
 		//System.err.println(msg);
 		getLogger().log(Level.SEVERE,msg);
-	}	
-	
-	
+	}
+
+
 	/**
 	 * Logs out to the WARNING log level to the default Logger
 	 * @param msg The message to log out
 	 */
 	protected void logWarning(String msg) {
-		//System.err.println(msg);
-		getLogger().log(Level.WARNING,msg);
+		getLogger().warning(msg);
 	}
-	
+
 	/**
 	 * Logs out to the CONFIG log level to the default Logger
 	 * @param msg The message to log out
@@ -265,16 +285,16 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 	protected void logConfig(String msg) {
 		//System.err.println(msg);
 		getLogger().log(Level.CONFIG,msg);
-	}	
-	
+	}
+
 	/**
 	 * Logs out to the debug log level to the default Logger
 	 * @param msg The message to log out
 	 */
 	protected void debug(String msg) {
 		logDebug(msg);
-	}	
-	
+	}
+
 	/**
 	 * Gets the default Logger. By default it uses the package and the class name to get the logger.<br>
 	 * This behaviour can be overridden in subclasses.
@@ -283,7 +303,7 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 	protected Logger getLogger(){
 		return Logger.getLogger(getClass().getName());
 	}
-	
+
 	/**
 	 * Gets the log level which messages are sent to when no log level is given.
 	 * @return the Level
@@ -305,24 +325,25 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 	protected Level getErrorLogLevel(){
 		return Level.WARNING;
 	}
-	
+
+	@Override
 	public void addActionListener(ActionListener listener) {
 		if (!this.actionListeners.contains(listener)) {
 			this.actionListeners.add(listener);
 		}
 	}
-	
+
 	public void triggerActionEvent(String command) {
 		triggerActionEvent(command, 0);
 	}
-	
+
 	public void triggerActionEvent(String command, int id) {
 		ActionEvent e = new ActionEvent(this, id, command);
 		for (ActionListener listener: actionListeners) {
 			listener.actionPerformed(e);
 		}
 	}
-	
+
 	protected User getCurrentUser() {
 		try {
 			LoginSession loginSession = ELUtil.getInstance().getBean(LoginSession.class);
@@ -331,5 +352,27 @@ protected <T extends IBOSession> T getSessionInstance(IWUserContext iwuc, Class<
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	protected com.idega.user.data.User getOldUser(User newUser) throws RemoteException {
+		if (newUser == null) {
+			return null;
+		}
+
+		UserHome userHome = (UserHome) getIDOHome(com.idega.user.data.User.class);
+		try {
+			return userHome.findByPrimaryKey(newUser.getId());
+		} catch (FinderException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public RepositoryService getRepositoryService() {
+		if (repositoryService == null) {
+			ELUtil.getInstance().autowire(this);
+		}
+		return repositoryService;
 	}
 }

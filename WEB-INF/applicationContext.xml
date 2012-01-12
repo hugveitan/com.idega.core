@@ -20,7 +20,8 @@
 
 	<bean id="loginSession" class="com.idega.core.accesscontrol.business.LoginSessionBean" scope="session" />
 	
-	<bean id="scriptCallerInterface" class="com.idega.dwr.reverse.ScriptCalerWithoutDWRThread" scope="session" />
+
+	<bean id="scriptCallerInterface" class="com.idega.dwr.reverse.ScriptCallerWithoutDWRThread" scope="session" />
 	
 	<bean id="customIdegaFacesContextInitializer" class="com.idega.webface.initializer.FacesContextInitializerImpl" scope="singleton" />
 	
@@ -52,4 +53,6 @@
   
   <bean id="genericDao" class="com.idega.core.persistence.impl.GenericDaoImpl" />
   
+  <bean id="repositoryService" class="com.idega.jackrabbit.repository.JackrabbitRepository" scope="singleton" />
+  <bean id="repositorySession" class="com.idega.jackrabbit.repository.JackrabbitRepositorySession" scope="session" />
 </beans>
