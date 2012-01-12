@@ -33,12 +33,12 @@ public abstract class JCRItem extends RepositoryItem {
 
 	public <T extends Serializable> T getPropertyValue(String prefix, String property, int type) {
 		Property prop = getProperty(prefix, property);
-		return getPropertyValue(prop, type);
+		return (T)getPropertyValue(prop, type);
 	}
 
 	public <T extends Serializable> T getPropertyValue(String property, int type) {
 		Property prop = getProperty(property);
-		return getPropertyValue(prop, type);
+		return (T)getPropertyValue(prop, type);
 	}
 
 	public <T extends Serializable> T getPropertyValue(Property property, int type) {

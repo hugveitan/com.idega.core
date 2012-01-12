@@ -35,7 +35,8 @@ import com.idega.util.CoreConstants;
 import com.idega.util.LocaleUtil;
 import com.idega.util.StringHandler;
 import com.idega.util.expression.ELUtil;
-import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimeUtility;
+
+import javax.mail.internet.MimeUtility;
 
 /**
  * <p>

@@ -475,36 +475,49 @@ public static String getFileSeparator(){
   public static List<String> getLinesFromFile(File fromFile) throws IOException{
     List<String> strings = new ArrayList<String>();
 
-    FileReader reader;
+    FileReader reader = null;
     LineNumberReader lineReader = null;
 
-    reader = new FileReader(fromFile);
-    lineReader = new LineNumberReader(reader);
-
-    lineReader.mark(1);
-    while (lineReader.read() != -1) {
-        lineReader.reset();
-        strings.add(lineReader.readLine());
-        lineReader.mark(1);
+    try {
+	    reader = new FileReader(fromFile);
+	    lineReader = new LineNumberReader(reader);
+	    String line = "";
+	    while ((line = lineReader.readLine()) != null){
+	    	strings.add(line);
+	    }
+    } finally{
+    	if(reader != null){
+    		reader.close();
+    	}
+    	if(lineReader != null){
+    		lineReader.close();
+    	}
     }
 
     return strings;
   }
   
-  	public static final File getFileFromWorkspace(String pathToFile) throws IOException {
-  		File file = new File(pathToFile);
-	    if (!file.exists()) {
-	    	int virtualPathStart = pathToFile.indexOf("/idegaweb/bundles/");
-	    	if (virtualPathStart != -1) {
-	    		file = IWBundleResourceFilter.copyResourceFromJarToWebapp(IWMainApplication.getDefaultIWMainApplication(), pathToFile.substring(virtualPathStart));
-	    	}
-	    }
-	    if (file != null && file.exists()) {
-	    	return file;
-	    }
-	    
-	    throw new IOException("File '" + pathToFile + "' doesn't exist!");
-  	}
+  public static final File getFileFromWorkspace(String pathToFile) throws IOException {
+	File file = new File(pathToFile);
+    if (!file.exists()) {
+    	String virtualPath;
+    	if(pathToFile.indexOf(WINDOWS_FILE_SEPARATOR) > -1){
+    		virtualPath = pathToFile.replace(WINDOWS_FILE_SEPARATOR, UNIX_FILE_SEPARATOR);
+	} else {
+		virtualPath = pathToFile;
+	}
+    	int virtualPathStart = virtualPath.indexOf("/idegaweb/bundles/");
+    	if (virtualPathStart != -1) {
+    		virtualPath = virtualPath.substring(virtualPathStart);
+    		file = IWBundleResourceFilter.copyResourceFromJarToWebapp(IWMainApplication.getDefaultIWMainApplication(), virtualPath);
+    	}
+    }
+    if (file != null && file.exists()) {
+    	return file;
+    }
+    
+    throw new IOException("File '" + pathToFile + "' doesn't exist!");
+  }
 
 /** Gets the lines from a file and return the as a vector of strings **/
   public static List<String> getLinesFromFile(String pathAndFile) throws IOException{
