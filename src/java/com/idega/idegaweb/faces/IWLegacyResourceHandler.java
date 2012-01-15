@@ -7,7 +7,7 @@
  * This software is the proprietary information of Idega hf. Use is subject to
  * license terms.
  */
-package com.idega.servlet.filter;
+package com.idega.idegaweb.faces;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,12 +24,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 
+import javax.faces.application.ResourceHandler;
+import javax.faces.application.ResourceHandlerWrapper;
 import javax.faces.context.FacesContext;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,15 +35,19 @@ import com.idega.idegaweb.DefaultIWBundle;
 import com.idega.idegaweb.IWBundle;
 import com.idega.idegaweb.IWMainApplication;
 import com.idega.idegaweb.IWModuleLoader;
+import com.idega.presentation.IWContext;
 import com.idega.util.CoreConstants;
 import com.idega.util.FileUtil;
 import com.idega.util.IOUtil;
 import com.idega.util.ListUtil;
+import com.idega.util.RequestUtil;
 import com.idega.util.StringHandler;
 import com.idega.util.StringUtil;
 import com.idega.util.resources.ResourcesAdder;
 
 /**
+ * IWLegacyResourceHandler based on the old IWBundleResourceFilter
+ * 
  * <p>
  * Filter that can feed out resources (images/css etc.) from a set directory for
  * all bundles.<br>
@@ -60,11 +61,10 @@ import com.idega.util.resources.ResourcesAdder;
  * 
  * @author <a href="mailto:tryggvil@idega.com">tryggvil</a>
  * @version $Revision: 1.56 $
- * @deprecated Replaced by com.idega.idegaweb.faces.IWLegacyResourceHandler
  */
-public class IWBundleResourceFilter extends BaseFilter {
+public class IWLegacyResourceHandler extends ResourceHandlerWrapper {
 
-	private static final Logger log = Logger.getLogger(IWBundleResourceFilter.class.getName());
+	private static final Logger log = Logger.getLogger(IWLegacyResourceHandler.class.getName());
 	
 	protected boolean feedFromSetBundleDir = false;
 	protected boolean feedFromJarFiles = IWMainApplication.loadBundlesFromJars;
@@ -79,31 +79,62 @@ public class IWBundleResourceFilter extends BaseFilter {
 	private static String XHTML = "xhtml";
 	private static String PSVG = "psvg";
 	private static String AXIS_JWS = "jws";
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
-	 */
-	public void init(FilterConfig arg0) throws ServletException {
+	
+	private ResourceHandler wrapped;
+	
+	public IWLegacyResourceHandler(ResourceHandler wrapped){
+		this.wrapped = wrapped;
 		String directory = System.getProperty(DefaultIWBundle.SYSTEM_BUNDLES_RESOURCE_DIR);
 		if (directory != null) {
 			this.sBundlesDirectory = directory;
 			this.feedFromSetBundleDir = true;
 		}
 	}
+	
+	
+	@Override
+	public ResourceHandler getWrapped() {
+		return wrapped;
+	}
+	
+	@Override
+    public boolean isResourceRequest(FacesContext context) {
+        return isThisHandlerResourceRequest(context) || getWrapped().isResourceRequest(context);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
-	 *      javax.servlet.ServletResponse, javax.servlet.FilterChain)
-	 */
-	public void doFilter(ServletRequest sreq, ServletResponse sres, FilterChain chain) throws IOException, ServletException {
-
-		HttpServletRequest request = (HttpServletRequest) sreq;
-		HttpServletResponse response = (HttpServletResponse) sres;
-		String requestUriWithoutContextPath = getURIMinusContextPath(request);
+	protected boolean isThisHandlerResourceRequest(FacesContext context) {
+		//TMP
+		return false;
+//		if(!getWrapped().isResourceRequest(context)){
+//			//No other resource handler recognizes it
+//			IWContext iwc = IWContext.getIWContext(context);
+//			String requestUriWithoutContextPath = getURIMinusContextPath(iwc.getRequest());
+//			if(requestUriWithoutContextPath != null && requestUriWithoutContextPath.startsWith(BUNDLES_STANDARD_DIR)){
+//				return true;
+//			}
+//		}
+//		return false;
+	}
+	
+	@Override
+    public void handleResourceRequest(FacesContext context) throws IOException {
+		if(isThisHandlerResourceRequest(context)){
+			IWContext iwc = IWContext.getIWContext(context);
+			doHandleResourceRequest(iwc, getURIMinusContextPath(iwc.getRequest()));
+		} else {
+			if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE,"Passing request to the next resource handler in chain");
+            }
+			getWrapped().handleResourceRequest(context);
+		}
+			
+	}
+	
+	//-------------------------- Methods from the old IWBundleResourceFilter
+	
+	public void doHandleResourceRequest(IWContext iwc, String requestUriWithoutContextPath) throws IOException {
+		HttpServletRequest request = (HttpServletRequest) iwc.getRequest();
+		HttpServletResponse response = (HttpServletResponse) iwc.getResponse();
 		
 		
 		if(!flushedResources.contains(requestUriWithoutContextPath)){
@@ -151,7 +182,7 @@ public class IWBundleResourceFilter extends BaseFilter {
 		}
 		
 		// if file is specially handled, flushed from the jar file or any error occurs, then let the server keep on going with it
-		chain.doFilter(sreq, sres);
+//		chain.doFilter(sreq, sres);
 	}
 
 	protected static String getBundleFromRequest(String requestUriWithoutContextPath) {
@@ -178,14 +209,12 @@ public class IWBundleResourceFilter extends BaseFilter {
 		int index = requestUriWithoutContextPath.indexOf(BUNDLE_SUFFIX);
 		if(index!=-1){
 			rest = requestUriWithoutContextPath.substring(index+BUNDLE_SUFFIX.length()+1);
-		} else {
+		}
+		else{
 			String URIWithoutBundlesURI = requestUriWithoutContextPath.substring(BUNDLES_STANDARD_DIR.length()+1);
-			index = URIWithoutBundlesURI.indexOf(CoreConstants.SLASH);
+			index = URIWithoutBundlesURI.indexOf("/");
 			rest = URIWithoutBundlesURI.substring(index);
 		}
-		
-		if (rest.indexOf(";jsessionid") != -1)
-			rest = rest.substring(0, rest.indexOf(";jsessionid"));
 		
 		return rest;
 	}
@@ -534,11 +563,11 @@ public class IWBundleResourceFilter extends BaseFilter {
 			String webappDir = iwma.getApplicationRealPath();
 			String workspaceDir = bundlesProperty;
 			String pathToBundleFileInWorkspace = resourceURI;
-			copiedFile = IWBundleResourceFilter.copyWorkspaceFileToWebapp(workspaceDir, webappDir, pathToBundleFileInWorkspace);
+			copiedFile = IWLegacyResourceHandler.copyWorkspaceFileToWebapp(workspaceDir, webappDir, pathToBundleFileInWorkspace);
 		}
 		
 		if (copiedFile == null || IWMainApplication.loadBundlesFromJars) {
-			IWBundleResourceFilter.copyResourceFromJarToWebapp(iwma, resourceURI);
+			IWLegacyResourceHandler.copyResourceFromJarToWebapp(iwma, resourceURI);
 		}
 	}
 
@@ -571,4 +600,19 @@ public class IWBundleResourceFilter extends BaseFilter {
 		}
 		return fileInWorkspace;
 	}
+	
+	
+	
+	
+	//-------------------------  BaseFilter methods
+	
+	protected String getURIMinusContextPath(HttpServletRequest request) {
+		return RequestUtil.getURIMinusContextPath(request);
+	}
+	
+	protected IWMainApplication getIWMainApplication(HttpServletRequest request) {
+		IWMainApplication iwma = IWMainApplication.getIWMainApplication(request.getSession().getServletContext());
+		return iwma;
+	}
+
 }

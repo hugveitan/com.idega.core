@@ -96,6 +96,20 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
+	<!-- The IWUrlRewriteFilter Filter -->
+	<filter>
+		<filter-name>IWUrlRewriteFilter</filter-name>
+		<filter-class>com.idega.servlet.filter.IWUrlRewriteFilter</filter-class>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>IWUrlRewriteFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>FORWARD</dispatcher>
+		<dispatcher>REQUEST</dispatcher>
+		<dispatcher>ERROR</dispatcher>
+	</filter-mapping>
+	
 	<!-- Repository authenticator filter -->
 	<filter>
 		<filter-name>RepositoryAuthenticator</filter-name>
@@ -155,11 +169,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
 			com.idega.servlet.filter.IWBundleResourceFilter
 		</filter-class>
 	</filter>
-
 	<filter-mapping>
 		<filter-name>IWBundleResourceFilter</filter-name>
 		<url-pattern>/idegaweb/*</url-pattern>
 	</filter-mapping>
+
 
 	<!-- The IWWelcomeFilter Filter -->
 	<filter>
@@ -376,6 +390,7 @@ End of ResponseHeaderFilter -->
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.xhtml</welcome-file>
 	</welcome-file-list>
 
 	<!-- Establish the default MIME type mappings -->

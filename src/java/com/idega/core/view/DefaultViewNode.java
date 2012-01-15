@@ -95,6 +95,23 @@ public class DefaultViewNode implements ViewNode {
 		}
 		return this.children;
 	}
+	
+    /**
+     * This method looks for a child that is a direct child of this instance (not a child of a child).
+     * @param childId
+     * @return
+     */
+    public boolean hasChild(String childId){
+            if(!getChildrenMap().containsKey(childId)){
+                    ViewNode n = loadChild(childId);
+                    if(n!=null){
+                            getChildrenMap().put(childId,n);
+                    } else {
+                            return false;
+                    }
+            }
+            return true;
+    }
 
 	/**
 	 * Returns the primary URI up the tree hierarchy and does NOT include the webapplications context path if any.

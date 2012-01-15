@@ -53,6 +53,13 @@ public interface ViewNode {
 	 */
 	public Collection<ViewNode> getChildren();
 	
+    /**
+     * This method looks for a child that is a direct child of this instance (not a child of a child).
+     * @param childId
+     * @return
+     */
+    public boolean hasChild(String childId);
+	
 	/**
 	 * Returns the primary URI up the tree hierarchy and does NOT include the webapplications context path if any.
 	 */

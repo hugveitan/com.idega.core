@@ -369,11 +369,15 @@ public class IWMainApplication	extends Application  implements MutableClass {
         this.setAttribute("bundles",getLoadedBundles());
 
         for (IWBundle bundle : getLoadedBundles().values()) {
-
-        	if(bundle.isPostponedBundleStartersRun()) {
-
-        		bundle.setPostponedBundleStartersRun(false);
-        		bundle.runBundleStarters();
+        	try{
+	        	if(bundle.isPostponedBundleStartersRun()) {
+	
+	        		bundle.setPostponedBundleStartersRun(false);
+	        		bundle.runBundleStarters();
+	        	}
+        	} catch (Throwable e) {
+        		log.severe("Error loading bundle: "+((bundle != null)?bundle.getBundleName():"null"));
+        		e.printStackTrace();
         	}
         }
     }
