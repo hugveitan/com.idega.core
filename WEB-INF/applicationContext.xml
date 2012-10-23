@@ -16,7 +16,7 @@
 	<aop:aspectj-autoproxy proxy-target-class="false" />
 
     <context:annotation-config/>
-    <context:component-scan base-package="com.idega,is.idega"/>
+    <context:component-scan base-package="com.idega,is.idega,is.hugveitan"/>
 
 	<bean id="loginSession" class="com.idega.core.accesscontrol.business.LoginSessionBean" scope="session" />
 	
@@ -30,9 +30,36 @@
 	<bean id="coreConstants" class="com.idega.util.CoreConstants" scope="singleton">
 		<property name="articleConstantsInstance" ref="articleConstants" />
 	</bean>
+	
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="locations">
+            <list>
+                <value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+	
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxActive" value="${jdbc.maxActive}"/>
+        <property name="maxWait" value="10000"/>
+        <property name="poolPreparedStatements" value="true"/>
+        <property name="defaultAutoCommit" value="true"/>
+        
+        <property name="maxIdle" value="${jdbc.maxIdle}"/>
+        <property name="removeAbandoned" value="true"/>
+        <property name="removeAbandonedTimeout" value="300"/>
+        <property name="logAbandoned" value="true"/>
+        <property name="testOnBorrow" value="true"/>
+        <property name="validationQuery" value="SELECT 1"/>
+    </bean>
     
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-    
+    	<property name="dataSource" ref="dataSource"/>
         <property name="persistenceUnitPostProcessors">
             <bean class="com.idega.core.persistence.impl.OrmPathPatternMatchingResolver">
                 <property name="resourceResolver">
@@ -53,6 +80,9 @@
   
   <bean id="genericDao" class="com.idega.core.persistence.impl.GenericDaoImpl" />
   
-  <bean id="repositoryService" class="com.idega.jackrabbit.repository.JackrabbitRepository" scope="singleton" />
+  <bean id="repositoryService" class="com.idega.jackrabbit.repository.JackrabbitRepository" scope="singleton" >
+  	<property name="configFile" value="classpath:WEB-INF/repository.xml" />
+  	<!-- <property name="repositoryHome" value="WEB-INF/jcr/store" /> -->
+  </bean>
   <bean id="repositorySession" class="com.idega.jackrabbit.repository.JackrabbitRepositorySession" scope="session" />
 </beans>

@@ -269,11 +269,12 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
 		<url-pattern>*.jsf</url-pattern>
 	</filter-mapping>
     <!-- extension mapping for adding <script/>, <link/>, and other resource tags to JSF-pages  -->
+	<!-- servlet-name must match the name of your javax.faces.webapp.FacesServlet entry -->
 	<filter-mapping>
 	    <filter-name>extensionsFilter</filter-name>
-	    <!-- servlet-name must match the name of your javax.faces.webapp.FacesServlet entry -->
 	    <servlet-name>Faces Servlet</servlet-name>
 	</filter-mapping>
+
 	<!-- extension mapping for serving page-independent resources (javascript, stylesheets, images, etc.)  -->
 	<filter-mapping>
 	    <filter-name>extensionsFilter</filter-name>
@@ -784,12 +785,14 @@ End of ResponseHeaderFilter -->
 	</mime-mapping>
 
 	<!-- Definition of the standard Default DataSource -->
+	<!--
 	<resource-ref>
 		<description>Default DB Connection</description>
 		<res-ref-name>jdbc/DefaultDS</res-ref-name>
 		<res-type>javax.sql.DataSource</res-type>
 		<res-auth>Container</res-auth>
 	</resource-ref>
+	-->
 
 	<jsp-config>
 		<jsp-property-group>

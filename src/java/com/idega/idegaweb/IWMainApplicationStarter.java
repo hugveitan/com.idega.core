@@ -177,6 +177,9 @@ public class IWMainApplicationStarter implements ServletContextListener  {
 			if(this.startIdegaDatabasePool()){
 				//db.properties Successful
 			}
+			else if(startSpringDatasourcePool()){
+				//Spring Successful
+			}
 			else if(startJNDIDatasourcePool()){
 				//JNDI Successful
 			}
@@ -263,6 +266,23 @@ public class IWMainApplicationStarter implements ServletContextListener  {
 			ConnectionBroker.setDefaultJDBCDatasourceURL(url);
 		}
 		theReturn =  ConnectionBroker.tryDefaultJNDIDataSource();
+		if(theReturn){
+			log.info("Starting JDBC Datastore ConnectionPool from url: "+ConnectionBroker.getDefaultJNDIUrl());
+		}
+		return theReturn;
+		
+	}
+	
+	
+	/**
+	 * <p>
+	 * Returns true if a Spring DataSource is successfully initialized.
+	 * </p>
+	 */
+	protected boolean startSpringDatasourcePool(){
+		boolean theReturn=false;
+
+		theReturn =  ConnectionBroker.tryDefaultSpringDataSource();
 		if(theReturn){
 			log.info("Starting JDBC Datastore ConnectionPool from url: "+ConnectionBroker.getDefaultJNDIUrl());
 		}

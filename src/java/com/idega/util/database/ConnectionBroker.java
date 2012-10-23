@@ -22,6 +22,7 @@ import javax.sql.DataSource;
 
 import com.idega.transaction.IdegaTransaction;
 import com.idega.transaction.IdegaTransactionManager;
+import com.idega.util.expression.ELUtil;
 /**
  *<p>
  * This class is an abstraction of the underlying Database Pool.<br>
@@ -47,12 +48,14 @@ public class ConnectionBroker
 	public final static int POOL_MANAGER_TYPE_IDEGA = 1;
 	public final static int POOL_MANAGER_TYPE_POOLMAN = 2;
 	public final static int POOL_MANAGER_TYPE_JDBC_DATASOURCE = 3;
+	public final static int POOL_MANAGER_TYPE_SPRING_DATASOURCE = 4;
 	public static final String SYSTEM_PROPERTY_DB_PROPERTIES_FILE_PATH = "idegaweb.db.properties";
 	public static int POOL_MANAGER_TYPE = POOL_MANAGER_TYPE_IDEGA;
 	private static String DEFAULT_JDBC_JNDI_URL = "jdbc/DefaultDS";
+	private static String DEFAULT_JDBC_SPRING_PROPERTY_NAME = "dataSource";
 	
 	private static DataSource defaultDs;
-	private static Map dataSourcesMap=new HashMap();
+	private static Map<String, DataSource> dataSourcesMap=new HashMap<String, DataSource>();
 	private static Logger log = Logger.getLogger(ConnectionBroker.class.getName());
 	public static int gottenConns=0;
 	/**	
@@ -112,7 +115,7 @@ public class ConnectionBroker
 					//System.out.println("Getting connection from pool for datasource: "+dataSourceName);
 					conn = PoolManager.getInstance().getConnection(dataSourceName);
 				}
-				else if (isUsingJNDIDatasource())
+				else if (isUsingJNDIDatasource() || isUsingSpringDatasource())
 				{
 					try
 					{
@@ -135,7 +138,8 @@ public class ConnectionBroker
 					//catch(SQLException e){
 					//  throw new RuntimeException(e.getMessage());
 					//}
-				}
+				} 
+				
 			}
 			return conn;
 		}
@@ -173,7 +177,7 @@ public class ConnectionBroker
 				PoolManager.getInstance().freeConnection(dataSourceName,connection);
 			}
 		}
-		else if (isUsingJNDIDatasource())
+		else if (isUsingJNDIDatasource() || isUsingSpringDatasource())
 		{
 			try {
 				if(!connection.isClosed()){
@@ -279,6 +283,11 @@ public class ConnectionBroker
 	{
 		return (POOL_MANAGER_TYPE == POOL_MANAGER_TYPE_JDBC_DATASOURCE);
 	}
+	public static boolean isUsingSpringDatasource()
+	{
+		return (POOL_MANAGER_TYPE == POOL_MANAGER_TYPE_SPRING_DATASOURCE);
+	}
+	
 	
 	
 	public static boolean tryDefaultJNDIDataSource(){
@@ -289,7 +298,7 @@ public class ConnectionBroker
 		DataSource ds;
 		try{
 			log.info("Trying DataSource with url: '"+DEFAULT_JDBC_JNDI_URL+"'");
-			ds = getDataSource(DEFAULT_POOL);
+			ds = getDataSource(DEFAULT_POOL, POOL_MANAGER_TYPE_JDBC_DATASOURCE);
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -299,6 +308,25 @@ public class ConnectionBroker
 		if(ds!=null){
 			POOL_MANAGER_TYPE=POOL_MANAGER_TYPE_JDBC_DATASOURCE;
 			log.info("Successfully enabled Database from DataSource: "+DEFAULT_JDBC_JNDI_URL);
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean tryDefaultSpringDataSource(){
+		DataSource ds;
+		try{
+			log.info("Trying DataSource with url: '"+DEFAULT_JDBC_SPRING_PROPERTY_NAME+"'");
+			ds = getDataSource(DEFAULT_POOL,POOL_MANAGER_TYPE_SPRING_DATASOURCE);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			return false;
+		}
+
+		if(ds!=null){
+			POOL_MANAGER_TYPE=POOL_MANAGER_TYPE_SPRING_DATASOURCE;
+			log.info("Successfully enabled Database from Spring DataSource: "+DEFAULT_JDBC_SPRING_PROPERTY_NAME);
 			return true;
 		}
 		return false;
@@ -356,19 +384,29 @@ public class ConnectionBroker
 	 * @param datasourceName
 	 * @return
 	 */
-	public static DataSource getDataSource(String datasourceName)
+	public static DataSource getDataSource(String datasourceName) {
+		return getDataSource(datasourceName, POOL_MANAGER_TYPE);
+	}
+	
+	
+	protected static DataSource getDataSource(String datasourceName, int poolManagerType)
 	{
 		if(datasourceName == null || datasourceName == DEFAULT_POOL || datasourceName.equals(DEFAULT_POOL)){
 			if (defaultDs == null)
 			{
-				try
-				{
-					defaultDs = (DataSource) getEnvContext().lookup(DEFAULT_JDBC_JNDI_URL);
+				if(poolManagerType == POOL_MANAGER_TYPE_SPRING_DATASOURCE){
+					defaultDs = (DataSource)ELUtil.getInstance().getBean(ELUtil.EXPRESSION_BEGIN+DEFAULT_JDBC_SPRING_PROPERTY_NAME+ELUtil.EXPRESSION_END);
 					dataSourcesMap.put(DEFAULT_POOL,defaultDs);
-				}
-				catch (NamingException e)
-				{
-					throw new RuntimeException("Error initializing datasource: " + datasourceName + ". Error was: " + e.getMessage());
+				} else {
+					try
+					{
+						defaultDs = (DataSource) getEnvContext().lookup(DEFAULT_JDBC_JNDI_URL);
+						dataSourcesMap.put(DEFAULT_POOL,defaultDs);
+					}
+					catch (NamingException e)
+					{
+						throw new RuntimeException("Error initializing datasource: " + datasourceName + ". Error was: " + e.getMessage());
+					}
 				}
 			}
 			return defaultDs;
@@ -376,14 +414,19 @@ public class ConnectionBroker
 		else{
 			DataSource dataSource = (DataSource)dataSourcesMap.get(datasourceName);
 			if(dataSource==null){
-				try
-				{
-					dataSource = (DataSource) getEnvContext().lookup("jdbc/"+datasourceName);
+				if(poolManagerType == POOL_MANAGER_TYPE_SPRING_DATASOURCE){
+					dataSource = (DataSource)ELUtil.getInstance().getBean(ELUtil.EXPRESSION_BEGIN+datasourceName+ELUtil.EXPRESSION_END);
 					dataSourcesMap.put(datasourceName,dataSource);
-				}
-				catch (NamingException e)
-				{
-					throw new RuntimeException("Error initializing datasource: " + datasourceName + ". Error was: " + e.getMessage());
+				} else {
+					try
+					{
+						dataSource = (DataSource) getEnvContext().lookup("jdbc/"+datasourceName);
+						dataSourcesMap.put(datasourceName,dataSource);
+					}
+					catch (NamingException e)
+					{
+						throw new RuntimeException("Error initializing datasource: " + datasourceName + ". Error was: " + e.getMessage());
+					}
 				}
 			}
 			return dataSource;
