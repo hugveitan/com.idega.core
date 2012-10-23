@@ -25,6 +25,7 @@ import com.idega.core.accesscontrol.business.LoggedOnInfo;
 import com.idega.core.accesscontrol.business.LoginBusinessBean;
 import com.idega.core.accesscontrol.business.LoginSession;
 import com.idega.idegaweb.IWMainApplication;
+import com.idega.presentation.FacesContextBuilder;
 import com.idega.repository.RepositoryService;
 import com.idega.servlet.filter.BaseFilter;
 import com.idega.util.ArrayUtil;
@@ -52,15 +53,9 @@ public class RepositoryAuthenticator extends BaseFilter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		
 		doAuthentication(request, response, chain);
-
-		if (!defaultPermissionsApplied) {
-			defaultPermissionsApplied = true;
-			defaultPermissionsApplied = applyDefaultPermissionsToRepository();
-
-//			IWMainApplication iwma = IWMainApplication.getIWMainApplication((HttpServletRequest) request);
-//			ELUtil.getInstance().publishEvent(new RepositoryStartedEvent(iwma));
-		}
+		
 	}
 
 	private boolean applyDefaultPermissionsToRepository() {
@@ -90,8 +85,12 @@ public class RepositoryAuthenticator extends BaseFilter {
 		HttpServletResponse res = (HttpServletResponse) response;
 		HttpSession session = req.getSession();
 		LoginBusinessBean loginBusiness = getLoginBusiness(req);
-
+		
 		try {
+			//This attaches FacesContext to the thread and thereby makes it available, 
+			//but this FacesContext must be released before the FacesServelt runs. 
+			FacesContextBuilder.createFacesContext(request, response);
+			
 			if (loginBusiness.isLoggedOn(req)) {
 				LoggedOnInfo lInfo = loginBusiness.getLoggedOnInfo(session);
 				req = setAsAuthenticatedInRepository(req, lInfo.getLogin(), lInfo);
@@ -120,12 +119,23 @@ public class RepositoryAuthenticator extends BaseFilter {
 					setAsUnauthenticatedInRepository(session);
 				}
 			}
+			
+			if (!defaultPermissionsApplied) {
+				defaultPermissionsApplied = true;
+				defaultPermissionsApplied = applyDefaultPermissionsToRepository();
+
+//				IWMainApplication iwma = IWMainApplication.getIWMainApplication((HttpServletRequest) request);
+//				ELUtil.getInstance().publishEvent(new RepositoryStartedEvent(iwma));
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
 			return;
+		} finally {
+			FacesContextBuilder.removeFacesContext();
 		}
-
+		
 		chain.doFilter(request, response);
 	}
 
