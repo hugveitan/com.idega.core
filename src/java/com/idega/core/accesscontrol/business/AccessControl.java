@@ -167,7 +167,7 @@ public class AccessControl extends IWServiceImpl implements AccessController {
 
 	private void initAdministratorPermissionGroup() {
 		PermissionGroup permission = getPermissionDAO().getPermissionGroup(AccessControl.getAdministratorGroupName());
-		if (permission != null) {
+		if (permission == null) {
 			permission = getPermissionDAO().createPermissionGroup(AccessControl.getAdministratorGroupName(), "Administrator permission");
 		}
 		this.AdministratorPermissionGroup = permission;
@@ -2341,7 +2341,7 @@ public class AccessControl extends IWServiceImpl implements AccessController {
 		Collection<com.idega.core.accesscontrol.data.ICPermission> oldPermissions = new ArrayList<com.idega.core.accesscontrol.data.ICPermission>();
 
 		try {
-			ICPermissionHome home = (ICPermissionHome) IDOLookup.getHome(ICPermission.class);
+			ICPermissionHome home = (ICPermissionHome) IDOLookup.getHome(com.idega.core.accesscontrol.data.ICPermission.class);
 			for (ICPermission permission : permissions) {
 				try {
 					oldPermissions.add(home.findByPrimaryKey(permission.getId()));
@@ -2383,7 +2383,7 @@ public class AccessControl extends IWServiceImpl implements AccessController {
 		Collection<com.idega.core.accesscontrol.data.ICPermission> oldPermissions = new ArrayList<com.idega.core.accesscontrol.data.ICPermission>();
 
 		try {
-			ICPermissionHome home = (ICPermissionHome) IDOLookup.getHome(ICPermission.class);
+			ICPermissionHome home = (ICPermissionHome) IDOLookup.getHome(com.idega.core.accesscontrol.data.ICPermission.class);
 			for (ICPermission permission : permissions) {
 				try {
 					oldPermissions.add(home.findByPrimaryKey(permission.getId()));
@@ -2495,13 +2495,15 @@ public class AccessControl extends IWServiceImpl implements AccessController {
 	 * @param groups
 	 * @return all ICPermissions owned by these groups
 	 */
-	public static Collection getAllGroupViewPermissions(Collection<Group> groups) {
+	public static Collection getAllGroupViewPermissions(Collection<com.idega.user.data.Group> groups) {
 		PermissionDAO permissionDAO = ELUtil.getInstance().getBean(PermissionDAO.class);
 		GroupDAO groupDAO = ELUtil.getInstance().getBean(GroupDAO.class);
 
+		//Convert to JPA object
+		//TODO: remove when GenericEntity is removed
 	    Collection<Group> permGroups = new ArrayList<Group>();
-	    for (Group group : groups) {
-			permGroups.add(groupDAO.findGroup(group.getID()));
+	    for (com.idega.user.data.Group group : groups) {
+			permGroups.add(groupDAO.findGroup(group.getNodeID()));
 		}
 
 		Collection returnCol = permissionDAO.findAllPermissionsByPermissionGroupsCollectionAndPermissionStringAndContextTypeOrderedByContextValue(
