@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import bsh.Interpreter;
 
 import com.idega.business.SpringBeanName;
+import com.idega.presentation.IWContext;
 import com.idega.util.CoreConstants;
 
 /**
@@ -64,7 +65,7 @@ public class ELUtil implements ApplicationContextAware {
 	
 	public <T>T getBean(String expression) {
 		if (expression.contains(CoreConstants.DOT)) {
-			FacesContext fctx = FacesContext.getCurrentInstance();
+			FacesContext fctx = IWContext.getCurrentInstance();
 			if (fctx != null) {
 				if (!expression.startsWith(EXPRESSION_BEGIN)) {
 					expression = EXPRESSION_BEGIN + expression;

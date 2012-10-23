@@ -52,6 +52,7 @@ public class IWWelcomeFilter extends BaseFilter {
 	private Map synchronizationObjects=new HashMap();
 	
 	private static final String PROPERTY_LOG_REQUESTS = "com.idega.core.logrequests";
+	public static final String PROPERTY_DISABLE_START_ON_WORKSPACE = "iw.pages.disable.start_on_workspace";
 	
 	public static void unload() {
 		//isInit = DEFAULT_VALUE_IS_INIT;
@@ -100,8 +101,12 @@ public class IWWelcomeFilter extends BaseFilter {
 		
 		if(requestUri.equals(appUri)){
 			
-
-			boolean startOnWorkspace=getIfStartOnWorkspace(request);
+			
+			String disableStartOnWorkspace = iwma.getSettings().getProperty(PROPERTY_DISABLE_START_ON_WORKSPACE);
+			boolean startOnWorkspace = false;
+			if(!"true".equalsIgnoreCase(disableStartOnWorkspace)){
+				startOnWorkspace=getIfStartOnWorkspace(request);
+			} 
 			
 			if(startOnWorkspace){
 				response.sendRedirect(getNewWorkspaceUri(request));

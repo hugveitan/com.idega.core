@@ -34,6 +34,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseStream;
 import javax.faces.context.ResponseWriter;
 import javax.faces.render.RenderKit;
+import javax.jcr.GuestCredentials;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.servlet.ServletContext;
@@ -1835,7 +1836,7 @@ public class IWContext extends javax.faces.context.FacesContext implements IWUse
 		if (this.isLoggedOn()) {
 			return getRepository().login(new SimpleCredentials(getRemoteUser(), CoreConstants.EMPTY.toCharArray()));
 		} else {
-			return getRepository().login();
+			return getRepository().login(new GuestCredentials());
 		}
 	}
 }
