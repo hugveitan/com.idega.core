@@ -20,4 +20,6 @@ public interface ICObjectDAO extends GenericDao {
 	
 	public ICObject findByClass(Class objectClass);
 	
+	public ICObject findByClassName(String objectClassName);
+	
 }

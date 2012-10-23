@@ -32,4 +32,10 @@ public class ICObjectDAOImpl extends GenericDaoImpl implements ICObjectDAO {
 		
 		return getSingleResult("object.findAllByClass", ICObject.class, param);
 	}
+	
+	public ICObject findByClassName(String objectClassName) {
+		Param param = new Param("className", objectClassName);
+		
+		return getSingleResult("object.findAllByClass", ICObject.class, param);
+	}
 }
