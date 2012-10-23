@@ -5,6 +5,7 @@ package com.idega.core.accesscontrol.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Query;
@@ -181,6 +182,10 @@ public class PermissionDAOImpl extends GenericDaoImpl implements PermissionDAO {
 
 	@Override
 	public List<ICPermission> findAllPermissionsByPermissionGroupsCollectionAndPermissionStringAndContextTypeOrderedByContextValue(Collection<Group> groups, Collection<String> permissionStrings, String contextType) {
+		if(groups == null || groups.isEmpty() || permissionStrings == null || permissionStrings.isEmpty() || contextType == null || contextType.isEmpty()){
+			return Collections.emptyList();
+		}
+		
 		Param param1 = new Param("groups", groups);
 		Param param2 = new Param("permissionStrings", permissionStrings);
 		Param param3 = new Param("contextType", contextType);
